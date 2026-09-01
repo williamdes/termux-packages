@@ -2,11 +2,12 @@ TERMUX_PKG_HOMEPAGE=https://github.com/leo-arch/clifm
 TERMUX_PKG_DESCRIPTION="The shell-like, command line terminal file manager: simple, fast, extensible, and lightweight as hell"
 TERMUX_PKG_LICENSE="GPL-2.0"
 TERMUX_PKG_MAINTAINER="@termux"
-TERMUX_PKG_VERSION="1.26.3"
-TERMUX_PKG_SRCURL=https://github.com/leo-arch/clifm/releases/download/v${TERMUX_PKG_VERSION}/clifm-${TERMUX_PKG_VERSION}.tar.gz
-TERMUX_PKG_SHA256=902badc747aee1eb1a3a5556ff3fd9d83d2aa987d24e058024064df8a4b6b71f
+TERMUX_PKG_VERSION="1.28"
+TERMUX_PKG_REVISION=2
+TERMUX_PKG_SRCURL="https://github.com/leo-arch/clifm/releases/download/v${TERMUX_PKG_VERSION}/clifm-${TERMUX_PKG_VERSION}.tar.gz"
+TERMUX_PKG_SHA256=65ac33825fb55d6388c1044572e464a50ad367b607448774fb396d850b7c4420
 TERMUX_PKG_AUTO_UPDATE=true
-TERMUX_PKG_DEPENDS="libcap, libacl, readline, file, libandroid-glob, libandroid-support"
+TERMUX_PKG_DEPENDS="libcap, libacl, readline, libandroid-glob, libandroid-support, libmagic"
 TERMUX_PKG_BUILD_IN_SRC=true
 TERMUX_PKG_EXTRA_MAKE_ARGS="-f misc/termux/Makefile"
 

@@ -2,9 +2,9 @@ TERMUX_PKG_HOMEPAGE=https://www.graphviz.org/
 TERMUX_PKG_DESCRIPTION="Rich set of graph drawing tools"
 TERMUX_PKG_LICENSE="EPL-2.0"
 TERMUX_PKG_MAINTAINER="@termux"
-TERMUX_PKG_VERSION="14.0.1"
+TERMUX_PKG_VERSION="16.0.0"
 TERMUX_PKG_SRCURL=https://gitlab.com/graphviz/graphviz/-/archive/$TERMUX_PKG_VERSION/graphviz-$TERMUX_PKG_VERSION.tar.gz
-TERMUX_PKG_SHA256=a969b754ecd9e25cc93b2d299cc03f573ff65c5d3595350fa22678c028b8de52
+TERMUX_PKG_SHA256=028f199ee3c77781360a600bac2e1fa56797011188772a2c8ea45be4ca7dde7b
 TERMUX_PKG_AUTO_UPDATE=true
 TERMUX_PKG_DEPENDS="fontconfig, freetype, gdk-pixbuf, glib, harfbuzz, libandroid-glob, libc++, libcairo, libexpat, libgd, libgts, libltdl, librsvg, libwebp, pango, zlib"
 TERMUX_PKG_BREAKS="graphviz-dev"
@@ -47,6 +47,9 @@ termux_step_pre_configure() {
 
 	LDFLAGS+=" -lm -landroid-glob"
 	LDFLAGS+=" -Wl,-rpath=$TERMUX_PREFIX/lib/graphviz"
+
+	chmod +x "$TERMUX_PKG_SRCDIR/lib/common/make_colortbl.py"
+	chmod +x "$TERMUX_PKG_SRCDIR/lib/common/entities.py"
 }
 
 termux_step_create_debscripts() {

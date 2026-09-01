@@ -2,8 +2,8 @@ TERMUX_PKG_HOMEPAGE=https://github.com/electron/electron
 TERMUX_PKG_DESCRIPTION="Build cross-platform desktop apps with JavaScript, HTML, and CSS"
 TERMUX_PKG_LICENSE="MIT, BSD 3-Clause"
 TERMUX_PKG_MAINTAINER="@licy183"
-_CHROMIUM_VERSION=138.0.7204.235
-TERMUX_PKG_VERSION=37.3.1
+_CHROMIUM_VERSION=148.0.7778.280
+TERMUX_PKG_VERSION=42.7.0
 TERMUX_PKG_SRCURL=git+https://github.com/electron/electron
 TERMUX_PKG_DEPENDS="atk, cups, dbus, fontconfig, gtk3, krb5, libc++, libevdev, libxkbcommon, libminizip, libnss, libx11, mesa, openssl, pango, pulseaudio, zlib"
 TERMUX_PKG_BUILD_DEPENDS="electron-host-tools-for-code-oss, libnotify, libffi-static"
@@ -48,6 +48,16 @@ termux_step_get_source() {
 }
 
 termux_step_post_get_source() {
+	# Remove all the .git folders to save space
+	find . -type d -name ".git" -exec rm -rf {} +
+
+	# Apply patches related to cxx23
+	local f
+	for f in $(find "$TERMUX_PKG_BUILDER_DIR/../electron-host-tools-for-code-oss/cxx-patches" -maxdepth 1 -type f -name *.patch | sort); do
+		echo "Applying patch: $(basename $f)"
+		patch --silent -p1 < "$f"
+	done
+
 	# Apply patches related to chromium
 	local f
 	for f in $(find "$TERMUX_PKG_BUILDER_DIR/../electron-host-tools-for-code-oss/cr-patches" -maxdepth 1 -type f -name *.patch | sort); do
@@ -61,6 +71,14 @@ termux_step_post_get_source() {
 		echo "Applying patch: $(basename $f)"
 		patch --silent -p1 < "$f"
 	done
+
+	# Enable jumbo build for //components and //chrome
+	python \
+		"$TERMUX_PKG_BUILDER_DIR/../chromium-host-tools/scripts/rewrite_gn_jumbo.py" \
+		"$TERMUX_PKG_SRCDIR" \
+		--verbose \
+		--subdirs chrome \
+		--subdirs components
 
 	# Apply patches for jumbo build
 	local f
@@ -84,11 +102,9 @@ termux_step_configure() {
 	__tur_setup_depot_tools
 
 	# Remove termux's dummy pkg-config
-	local _target_pkg_config=$(command -v pkg-config)
-	local _host_pkg_config="$(cat $_target_pkg_config | grep exec | awk '{print $2}')"
 	rm -rf $TERMUX_PKG_CACHEDIR/host-pkg-config-bin
 	mkdir -p $TERMUX_PKG_CACHEDIR/host-pkg-config-bin
-	ln -s $_host_pkg_config $TERMUX_PKG_CACHEDIR/host-pkg-config-bin/pkg-config
+	ln -s /usr/bin/pkg-config "$TERMUX_PKG_CACHEDIR"/host-pkg-config-bin/pkg-config
 	export PATH="$TERMUX_PKG_CACHEDIR/host-pkg-config-bin:$PATH"
 
 	# Setup rust toolchain and clang toolchain
@@ -143,8 +159,6 @@ termux_step_configure() {
 		cp -Rf $TERMUX_PREFIX/include/* usr/include
 		cp -Rf $TERMUX_PREFIX/lib/* usr/lib
 		ln -sf /data ./data
-		# This is needed to build crashpad
-		rm -rf $TERMUX_PREFIX/include/spawn.h
 		# This is needed to build cups
 		cp -Rf $TERMUX_PREFIX/bin/cups-config usr/bin/
 		chmod +x usr/bin/cups-config
@@ -212,6 +226,7 @@ use_bundled_fontconfig = false
 use_system_freetype = false
 use_custom_libcxx = false
 use_custom_libcxx_for_host = true
+use_clang_modules = false
 use_allocator_shim = false
 use_partition_alloc_as_malloc = false
 enable_backup_ref_ptr_slow_checks = false
@@ -222,22 +237,22 @@ enable_backup_ref_ptr_support = false
 enable_pointer_compression_support = false
 use_nss_certs = true
 use_udev = false
-use_alsa = false
-use_libpci = false
-use_pulseaudio = true
 use_ozone = true
 ozone_auto_platforms = false
 ozone_platform = \"x11\"
 ozone_platform_x11 = true
+# TODO: Enable wayland
 ozone_platform_wayland = false
 ozone_platform_headless = true
 angle_enable_vulkan = true
 angle_enable_swiftshader = true
 angle_enable_abseil = false
+use_libpci = false
+use_alsa = false
+use_pulseaudio = true
 rtc_use_pipewire = false
 use_vaapi = false
 # See comments on Chromium package
-enable_nacl = false
 is_cfi = false
 use_cfi_icall = false
 use_thin_lto = false
@@ -246,12 +261,15 @@ build_tflite_with_opencl = false
 build_tflite_with_nnapi = true
 # Enable rust
 custom_target_rust_abi_target = \"$CARGO_TARGET_NAME\"
-llvm_android_mainline = true
+clang_warning_suppression_file = \"\"
 exclude_unwind_tables = false
 # Enable jumbo build (unified build)
 use_jumbo_build = true
 # Compile pdfium as a static library
 # pdf_is_complete_lib = true
+# NDK r29 can't compile chromium with cxx23, see
+# https://github.com/termux/termux-packages/issues/28459#issuecomment-3991943697
+use_cxx23 = false
 # Use prebuilt js2c
 prebuilt_js2c_binary = \"$TERMUX_PREFIX/opt/electron-host-tools-for-code-oss/$_v8_toolchain_name/node_js2c\"
 " >> $_common_args_file

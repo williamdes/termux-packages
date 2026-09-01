@@ -2,11 +2,11 @@ TERMUX_PKG_HOMEPAGE=https://www.haproxy.org/
 TERMUX_PKG_DESCRIPTION="The Reliable, High Performance TCP/HTTP Load Balancer"
 TERMUX_PKG_LICENSE="GPL-2.0, LGPL-2.1"
 TERMUX_PKG_MAINTAINER="@termux"
-TERMUX_PKG_VERSION="3.2.6"
+TERMUX_PKG_VERSION="3.4.4"
 TERMUX_PKG_SRCURL=https://www.haproxy.org/download/${TERMUX_PKG_VERSION%.*}/src/haproxy-${TERMUX_PKG_VERSION}.tar.gz
-TERMUX_PKG_SHA256=ad630b6b0b73e1d118acce458fec1bf1e7d0e429530f2668ec582f4f8bb78e65
+TERMUX_PKG_SHA256=b0c5053c4d46840ecdee3925736fe9a3de6472559b43c69183d70e593d9133df
 TERMUX_PKG_AUTO_UPDATE=true
-TERMUX_PKG_DEPENDS="liblua53, openssl, pcre2, zlib"
+TERMUX_PKG_DEPENDS="lua53, openssl, pcre2, zlib"
 TERMUX_PKG_BUILD_IN_SRC=true
 
 TERMUX_PKG_CONFFILES="etc/haproxy/haproxy.cfg"
@@ -29,6 +29,7 @@ termux_step_make() {
 		LUA_LIB_NAME=lua5.3 \
 		USE_OPENSSL=1 \
 		USE_PCRE2=1 \
+		USE_THREAD=1 \
 		PCRE2_CONFIG="$TERMUX_PREFIX/bin/pcre2-config" \
 		USE_ZLIB=1 \
 		ADDINC="$CPPFLAGS" \

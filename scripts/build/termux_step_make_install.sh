@@ -22,7 +22,13 @@ termux_step_make_install() {
 			make -j 1 ${TERMUX_PKG_EXTRA_MAKE_ARGS} ${TERMUX_PKG_MAKE_INSTALL_TARGET}
 		fi
 	elif test -f Cargo.toml; then
-		termux_setup_rust
+		if [[ -z "$(command -v cargo)" ]]; then
+			termux_error_exit "cargo command is not found! Please add termux_setup_rust in package's build.sh!"
+		fi
+		local CARGO_DEBUG_FLAG=''
+		if [[ "$TERMUX_DEBUG_BUILD" == "true" ]]; then
+			CARGO_DEBUG_FLAG='--debug'
+		fi
 		cargo install \
 			--jobs $TERMUX_PKG_MAKE_PROCESSES \
 			--path . \
@@ -31,6 +37,7 @@ termux_step_make_install() {
 			--no-track \
 			--target $CARGO_TARGET_NAME \
 			--root $TERMUX_PREFIX \
+			$CARGO_DEBUG_FLAG \
 			$TERMUX_PKG_EXTRA_CONFIGURE_ARGS
 	fi
 }

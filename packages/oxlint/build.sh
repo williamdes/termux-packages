@@ -2,9 +2,9 @@ TERMUX_PKG_HOMEPAGE=https://oxc.rs/
 TERMUX_PKG_DESCRIPTION="Oxc JavaScript linter"
 TERMUX_PKG_LICENSE="MIT"
 TERMUX_PKG_MAINTAINER="@termux"
-TERMUX_PKG_VERSION="1.16.0"
+TERMUX_PKG_VERSION="1.80.0"
 TERMUX_PKG_SRCURL="https://github.com/oxc-project/oxc/archive/refs/tags/oxlint_v$TERMUX_PKG_VERSION.tar.gz"
-TERMUX_PKG_SHA256=53fda71250a6fd37e7928510f6ec97de894e3dfdb0c959e3320eb9bd445b7654
+TERMUX_PKG_SHA256=56f5ac5c3a8829956c82a29dcc78a00b456d703b1bf1c0a8cc7153303ce80005
 TERMUX_PKG_AUTO_UPDATE=true
 TERMUX_PKG_BUILD_IN_SRC=true
 
@@ -36,7 +36,7 @@ termux_pkg_auto_update() {
 	# filter only tags having "oxlint_v" and extract only raw version.
 	read -r newest_tag < <(echo "$newest_tags" | grep -Po 'oxlint_v\K\d+\.\d+\.\d+' | sort -Vr)
 
-	[[ -z "${newest_tag}" ]] && termux_error_exit "ERROR: Unable to get tag from ${TERMUX_PKG_SRCURL}"
+	[[ -z "${newest_tag}" ]] && termux_error_exit "Unable to get tag from ${TERMUX_PKG_SRCURL}"
 	termux_pkg_upgrade_version "${newest_tag}"
 }
 
@@ -52,10 +52,6 @@ termux_step_pre_configure() {
 	export TARGET_CMAKE_TOOLCHAIN_FILE="$TERMUX_PKG_BUILDDIR/android.toolchain.cmake"
 	touch "$TARGET_CMAKE_TOOLCHAIN_FILE"
 
-	: "${CARGO_HOME:=$HOME/.cargo}"
-	export CARGO_HOME
-	cargo fetch --target "$CARGO_TARGET_NAME"
-
 	# ld.lld: error: undefined symbol: __atomic_load_8
 	if [[ "$TERMUX_ARCH" == "i686" ]]; then
 		local -u env_host="${CARGO_TARGET_NAME//-/_}"
@@ -64,11 +60,10 @@ termux_step_pre_configure() {
 }
 
 termux_step_make() {
-	cargo build --jobs "$TERMUX_PKG_MAKE_PROCESSES" --target "$CARGO_TARGET_NAME" --release --all-features
+	cargo build --jobs "$TERMUX_PKG_MAKE_PROCESSES" --target "$CARGO_TARGET_NAME" --release
 }
 
 termux_step_make_install() {
 	install -Dm700 -t "$TERMUX_PREFIX/bin" "target/$CARGO_TARGET_NAME/release/oxlint"
 	install -Dm700 -t "$TERMUX_PREFIX/bin" "target/$CARGO_TARGET_NAME/release/oxfmt"
-	install -Dm700 -t "$TERMUX_PREFIX/bin" "target/$CARGO_TARGET_NAME/release/oxc_language_server"
 }

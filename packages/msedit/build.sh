@@ -2,16 +2,15 @@ TERMUX_PKG_HOMEPAGE="https://github.com/microsoft/edit"
 TERMUX_PKG_DESCRIPTION="A simple editor for simple needs (Microsoft Edit)"
 TERMUX_PKG_LICENSE="MIT"
 TERMUX_PKG_MAINTAINER="@termux"
-TERMUX_PKG_VERSION="1.2.0"
+TERMUX_PKG_VERSION="2.0.0"
+TERMUX_PKG_REVISION=1
 TERMUX_PKG_SRCURL="https://github.com/microsoft/edit/archive/refs/tags/v${TERMUX_PKG_VERSION}.tar.gz"
-TERMUX_PKG_SHA256=e4ba6ff1bfecfeff2492306f5850c714bf50ffdb3cc3bb5be3aa987289f240fe
+TERMUX_PKG_SHA256=f35da309c5f3d92b10e5c4b2267e4d5e29d809b2aa460e80326b11f7feba72a5
 TERMUX_PKG_DEPENDS="libicu"
 TERMUX_PKG_BUILD_IN_SRC=true
 TERMUX_PKG_AUTO_UPDATE=true
 
 termux_step_pre_configure() {
-	# Do not pin the compiler version to nightly.
-	rm "$TERMUX_PKG_SRCDIR/rust-toolchain.toml"
 	termux_setup_rust
 }
 
